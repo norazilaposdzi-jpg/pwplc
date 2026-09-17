@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRACTICAL WORK</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
+    .admin-container { max-width: 1000px; }
+    h2 { color: #c0392b; margin-bottom: 5px; font-size: 28px; } /* Tema Merah */
+    h4 { color: #555; margin-top: 0; font-weight: normal; font-size: 14px; margin-bottom: 25px;}
+    
+    .input-group { margin-bottom: 15px; text-align: left; }
+    .input-group label { display: block; margin-bottom: 5px; color: #333; font-weight: bold;}
+    .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
+    
+    .btn { background-color: #c0392b; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; transition: background 0.3s; }
+    .btn:hover:not(:disabled) { background-color: #d35400; } /* Bertukar Oren/Amber bila disentuh */
+    .btn:disabled { background-color: #e6b0aa; cursor: not-allowed; }
+    
+    .upload-section { margin-top: 20px; text-align: left; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
+    .upload-section h3 { margin-top: 0; font-size: 16px; color: #333; display: flex; justify-content: space-between; align-items: center;}
+    
+    .status-badge { font-size: 12px; padding: 4px 8px; border-radius: 12px; color: white; font-weight: normal; }
+    .status-belum { background-color: #dc3545; } /* Merah */
+    .status-semakan { background-color: #007bff; } /* Biru */
+    .status-semak { background-color: #28a745; } /* Hijau */
+    
+    .file-input { margin-bottom: 10px; width: 100%; }
+    .upload-msg { margin-top: 10px; font-size: 13px; font-weight: bold; text-align: left; }
+    .success-text { color: #28a745; }
+    .fail-text { color: #c0392b; }
+
+    /* Butang Khas Pelajar */
+    .view-link-btn { display: inline-block; background-color: #3498db; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight:bold; margin-top: 10px;}
+    .view-link-btn:hover { background-color: #2980b9; }
+    .reupload-btn { display: inline-block; background-color: #f39c12; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight:bold; margin-top: 10px; margin-left: 5px; }
+    .reupload-btn:hover { background-color: #d68910; }
+
+    /* Gaya Jadual Admin */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; text-align: left; }
+    th, td { padding: 10px; border: 1px solid #ddd; }
+    th { background-color: #c0392b; color: white; } /* Header Merah */
+    .admin-action-btn { background-color: #f39c12; color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; margin-top: 5px;}
+    .admin-action-btn:hover:not(:disabled) { background-color: #d68910; }
+    .admin-view-link { color: #3178c6; text-decoration: none; font-weight: bold; }
+    .admin-view-link:hover { text-decoration: underline; }
+
+    .action-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .action-buttons .btn { width: auto; font-size: 14px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="login-container">
+    <h2>PRACTICAL WORK</h2>
+    <h4>DEJ40093 PLC AND AUTOMATION<br>SESI I 2026/2027</h4>
+    
+    <div class="input-group">
+      <label>No Pendaftaran</label>
+      <input type="text" id="noPend" required>
+    </div>
+    <div class="input-group">
+      <label>Kata Laluan</label>
+      <input type="password" id="password" required>
+    </div>
+    
+    <button class="btn" id="loginBtn" onclick="sistemLogin()">Log Masuk</button>
+    <div id="login-error" class="fail-text" style="margin-top: 15px; font-weight: bold; font-size: 14px;"></div>
+  </div>
+
+  <div class="container" id="student-container" style="display: none;">
+    <h2 style="margin-bottom: 5px; color: #333; font-size: 24px;">Selamat Datang,</h2>
+    <h3 id="studentName" style="color: #c0392b; margin-top: 0; margin-bottom: 5px;"></h3>
+    <p id="displayNoPend" style="color:#555; font-size:14px; font-weight:bold; margin-top:0;"></p>
+    <p style="color:#555; font-size:14px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Sila muat naik laporan (PDF/Word). Maksimum 10MB.</p>
+    
+    <div id="pw-sections">
+      <!-- Kandungan dijana melalui JavaScript -->
+    </div>
+    
+    <button class="btn" style="margin-top: 20px; background-color: #7f8c8d;" onclick="location.reload()">Log Keluar</button>
+  </div>
+
+  <div class="container admin-container" id="admin-container" style="display: none;">
+    <h2>Dashboard Pensyarah</h2>
+    <h4>Pantauan Serahan Evidens Pelajar</h4>
+    
+    <div style="overflow-x: auto;">
+      <table id="adminTable">
+        <thead>
+          <tr>
+            <th>No Pendaftaran</th>
+            <th>Nama Pelajar</th>
+            <th>Laporan PW 4</th>
+            <th>Laporan PW 5</th>
+            <th>Laporan PW 6</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody">
+          <!-- Data pelajar dimasukkan di sini -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Butang Tindakan Admin -->
+    <div class="action-buttons">
+      <button class="btn" style="background-color: #7f8c8d;" onclick="location.reload()">Log Keluar</button>
+      <button class="btn" id="btnKemaskini" style="background-color: #f39c12;" onclick="kemaskiniAdmin()">Kemaskini Data</button>
+      <button class="btn" style="background-color: #c0392b;" onclick="resetLocalData()">Reset Data Local</button>
+    </div>
+  </div>
+
+  <script>
+    // URL Web App dan CSV
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR668h2sbXXbrxl2AgZxxAiZLRResf0mW6pb04Ozcg8v03Ruy9iqBs4ZwzXf--mu7y9qgpTNUdUlrWl/pub?gid=0&single=true&output=csv";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwvrV7ZUqtspFPK1xXLJKL_XZInyyCpDdFErRKrMiBchcJjxKwl1WtelqtRo8gK4Z1b/exec";
+
+    let globalCsvData = [];
+
+    // Fungsi mendapatkan data CSV
+    async function fetchCSV() {
+      try {
+        // Tambah parameter "?t=" untuk elak cache dan paksa ambil data terkini
+        const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
+        if (!response.ok) throw new Error("Gagal akses pangkalan data.");
+        const text = await response.text();
+        
+        const rows = text.split('\n');
+        globalCsvData = rows.map(row => row.split(',').map(cell => cell.trim()));
+        return true;
+      } catch (error) {
+        document.getElementById("login-error").innerHTML = "Ralat: Gagal menghubungi pelayan.<br><br><span style='color:#333; font-weight:normal;'>Sila muat turun fail ini dan buka dari komputer anda.</span>";
+        return false;
+      }
+    }
+
+    // Fungsi Log Masuk
+    async function sistemLogin() {
+      const noPend = document.getElementById("noPend").value.trim().toUpperCase();
+      const password = document.getElementById("password").value;
+      const btn = document.getElementById("loginBtn");
+      const errorMsg = document.getElementById("login-error");
+
+      if (!noPend || !password) {
+        errorMsg.innerText = "Sila isi kedua-dua ruangan.";
+        return;
+      }
+
+      btn.innerText = "Menyemak Pangkalan Data...";
+      btn.disabled = true;
+      errorMsg.innerText = "";
+
+      // Semakan Admin
+      if (noPend === "ADMIN" && password === "admin123") {
+        const success = await fetchCSV();
+        if (success) {
+          paparkanAdmin();
+        } else { 
+          btn.innerText = "Log Masuk"; btn.disabled = false; 
+        }
+        return;
+      }
+
+      // Semakan Pelajar
+      const success = await fetchCSV();
+      if (!success) {
+        btn.innerText = "Log Masuk";
+        btn.disabled = false;
+        return;
+      }
+
+      let foundStudent = null;
+      for (let i = 1; i < globalCsvData.length; i++) {
+        if (globalCsvData[i][0] && globalCsvData[i][0].toUpperCase() === noPend) {
+          foundStudent = {
+            row: i,
+            noPend: globalCsvData[i][0],
+            name: globalCsvData[i][1],
+            pw4: globalCsvData[i][3] || "",
+            pw5: globalCsvData[i][4] || "",
+            pw6: globalCsvData[i][5] || ""
+          };
+          break;
+        }
+      }
+
+      if (foundStudent && password === "12345") {
+        paparkanPelajar(foundStudent);
+      } else {
+        errorMsg.innerText = "ID atau Kata Laluan salah.";
+        btn.innerText = "Log Masuk";
+        btn.disabled = false;
+      }
+    }
+
+    // Fungsi Paparan Pelajar
+    function paparkanPelajar(student) {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("student-container").style.display = "block";
+      document.getElementById("studentName").innerText = student.name;
+      document.getElementById("displayNoPend").innerText = student.noPend;
+
+      binaBorangPelajar(student);
+    }
+
+    // Bina kotak muat naik untuk pelajar
+    function binaBorangPelajar(student) {
+      const pwList = [
+        { id: "PW4", name: "Laporan PW 4", data: student.pw4 },
+        { id: "PW5", name: "Laporan PW 5", data: student.pw5 },
+        { id: "PW6", name: "Laporan PW 6", data: student.pw6 }
+      ];
+
+      let htmlContent = "";
+      pwList.forEach(pw => {
+        let hasUploaded = (pw.data && pw.data.trim() !== "");
+        let isChecked = pw.data.includes("[TELAH DISEMAK]");
+        let cleanUrl = pw.data.replace("[TELAH DISEMAK]", "").trim();
+
+        htmlContent += `<div class="upload-section" id="section-${pw.id}">`;
+        
+        if (hasUploaded) {
+          // Paparan JIKA SUDAH HANTAR
+          let statusBadge = isChecked ? 
+            `<span class="status-badge status-semak">Telah Disemak</span>` : 
+            `<span class="status-badge status-semakan">Dalam Semakan</span>`;
+            
+          htmlContent += `
+            <h3>${pw.name} ${statusBadge}</h3>
+            <div class="upload-msg success-text">Selesai. Berjaya direkodkan!</div>
+            <div>
+              <a href="${cleanUrl}" target="_blank" class="view-link-btn">Lihat Fail Yang Dihantar ↗</a>
+              <button class="reupload-btn" onclick="bukaSemulaUpload('${pw.id}')">Muat Naik Semula</button>
+            </div>
+            <!-- Bekas tersembunyi untuk muat naik semula -->
+            <div id="reupload-box-${pw.id}" style="display:none; margin-top:15px; border-top: 1px dashed #ccc; padding-top:10px;">
+               <input type="file" id="file${pw.id}" class="file-input" accept=".pdf, .doc, .docx" onchange="aktifkanButang('${pw.id}')">
+               <button class="btn" id="btn${pw.id}" onclick="muatNaikFail('${pw.id}')" disabled>Hantar Ganti Fail Baru</button>
+               <div id="msg${pw.id}" class="upload-msg"></div>
+            </div>
+          `;
+        } else {
+          // Paparan JIKA BELUM HANTAR (Tiada lencana 'Belum Hantar')
+          htmlContent += `
+            <h3>${pw.name}</h3>
+            <input type="file" id="file${pw.id}" class="file-input" accept=".pdf, .doc, .docx" onchange="aktifkanButang('${pw.id}')">
+            <button class="btn" id="btn${pw.id}" onclick="muatNaikFail('${pw.id}')" disabled>Muat Naik ${pw.id}</button>
+            <div id="msg${pw.id}" class="upload-msg"></div>
+          `;
+        }
+        
+        htmlContent += `</div>`;
+      });
+
+      document.getElementById("pw-sections").innerHTML = htmlContent;
+    }
+
+    // Fungsi buka borang muat naik semula
+    function bukaSemulaUpload(pwType) {
+      document.getElementById("reupload-box-" + pwType).style.display = "block";
+    }
+
+    function aktifkanButang(pwType) {
+      const fileInput = document.getElementById("file" + pwType);
+      const btn = document.getElementById("btn" + pwType);
+      btn.disabled = fileInput.files.length === 0;
+    }
+
+    // Fungsi Muat Naik Fail ke Google Script
+    async function muatNaikFail(pwType) {
+      const fileInput = document.getElementById("file" + pwType);
+      const btn = document.getElementById("btn" + pwType);
+      const msg = document.getElementById("msg" + pwType);
+      const file = fileInput.files[0];
+      const noPend = document.getElementById("displayNoPend").innerText;
+
+      if (!file) return;
+
+      btn.innerText = "Memuat naik... Sila tunggu";
+      btn.disabled = true;
+      msg.innerText = "";
+
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const base64Data = reader.result.split(',')[1];
+        
+        const payload = {
+          action: "upload",
+          noPend: noPend,
+          pwType: pwType,
+          filename: file.name,
+          mimeType: file.type,
+          base64: base64Data
+        };
+
+        try {
+          const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          
+          if (result.status === "success") {
+            // Berjaya. Ubah antaramuka sertamerta tanpa refresh.
+            let section = document.getElementById("section-" + pwType);
+            section.innerHTML = `
+              <h3>Laporan ${pwType} <span class="status-badge status-semakan">Dalam Semakan</span></h3>
+              <div class="upload-msg success-text">Selesai. Berjaya direkodkan!</div>
+              <div>
+                <a href="${result.fileUrl}" target="_blank" class="view-link-btn">Lihat Fail Yang Dihantar ↗</a>
+                <button class="reupload-btn" onclick="bukaSemulaUpload('${pwType}')">Muat Naik Semula</button>
+              </div>
+              <div id="reupload-box-${pwType}" style="display:none; margin-top:15px; border-top: 1px dashed #ccc; padding-top:10px;">
+                 <input type="file" id="file${pwType}" class="file-input" accept=".pdf, .doc, .docx" onchange="aktifkanButang('${pwType}')">
+                 <button class="btn" id="btn${pwType}" onclick="muatNaikFail('${pwType}')" disabled>Hantar Ganti Fail Baru</button>
+                 <div id="msg${pwType}" class="upload-msg"></div>
+              </div>
+            `;
+          } else {
+            msg.className = "upload-msg fail-text";
+            msg.innerText = "Gagal: " + result.message;
+            btn.innerText = "Muat Naik Semula";
+            btn.disabled = false;
+          }
+        } catch (error) {
+          msg.className = "upload-msg fail-text";
+          msg.innerText = "Ralat rangkaian. Sila guna di luar ruangan Preview.";
+          btn.innerText = "Muat Naik Semula";
+          btn.disabled = false;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function paparkanAdmin() {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("admin-container").style.display = "block";
+      
+      const tbody = document.getElementById("adminTableBody");
+      let html = "";
+
+      for (let i = 1; i < globalCsvData.length; i++) {
+        const row = globalCsvData[i];
+        if(!row[0]) continue; 
+        
+        html += `<tr>
+          <td><strong>${row[0]}</strong></td>
+          <td>${row[1]}</td>
+          <td>${binaSelAdmin(i + 1, 4, row[3])}</td> 
+          <td>${binaSelAdmin(i + 1, 5, row[4])}</td>
+          <td>${binaSelAdmin(i + 1, 6, row[5])}</td>
+        </tr>`;
+      }
+      tbody.innerHTML = html;
+    }
+
+    function binaSelAdmin(rowNo, colNo, dataUrl) {
+      if (!dataUrl || dataUrl.trim() === "") {
+        return `<span style="color:#c0392b; font-weight:bold;">Belum Hantar</span>`;
+      }
+      
+      const isChecked = dataUrl.includes("[TELAH DISEMAK]");
+      const cleanUrl = dataUrl.replace("[TELAH DISEMAK]", "").trim();
+      
+      let html = `<a href="${cleanUrl}" target="_blank" class="admin-view-link">Lihat Fail</a><br>`;
+      
+      if (isChecked) {
+        html += `<span style="color: #28a745; font-weight: bold; font-size: 11px;">✓ Disemak</span>`;
+      } else {
+        html += `<button class="admin-action-btn" onclick="tandakanDisemak(this, ${rowNo}, ${colNo}, '${cleanUrl}')">Tandakan Disemak</button>`;
+      }
+      return html;
+    }
+
+    async function tandakanDisemak(btnElement, rowNo, colNo, urlBase) {
+      btnElement.innerText = "Tunggu...";
+      btnElement.disabled = true;
+
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "updateStatus", row: rowNo, col: colNo, url: urlBase })
+        });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          btnElement.outerHTML = `<span style="color: #28a745; font-weight: bold; font-size: 11px;">✓ Disemak</span>`;
+        } else {
+          alert("Gagal mengemas kini: " + result.message);
+          btnElement.innerText = "Cuba Lagi";
+          btnElement.disabled = false;
+        }
+      } catch (error) {
+        alert("Gagal menyambung ke pelayan.");
+        btnElement.innerText = "Tandakan Disemak";
+        btnElement.disabled = false;
+      }
+    }
+
+    // Fungsi Kemaskini Data Admin
+    async function kemaskiniAdmin() {
+      const btn = document.getElementById("btnKemaskini");
+      const textAsal = "Kemaskini Data";
+      
+      btn.innerText = "Menyedut Data...";
+      btn.disabled = true;
+
+      const success = await fetchCSV();
+      
+      if (success) {
+        paparkanAdmin(); 
+        btn.innerText = "Terkini ✓";
+        btn.style.backgroundColor = "#28a745"; // Hijau
+        
+        setTimeout(() => {
+          btn.innerText = textAsal;
+          btn.style.backgroundColor = "#f39c12"; // Kembali ke Oren
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        alert("Ralat semasa menarik data terkini.");
+        btn.innerText = textAsal;
+        btn.disabled = false;
+      }
+    }
+
+    // Fungsi Reset Local Data
+    function resetLocalData() {
+      if(confirm("Tindakan ini hanya akan membersihkan cache browser ini. Data sebenar masih tersimpan di Google Sheet. Teruskan?")) {
+        localStorage.clear();
+        alert("Cache tempatan dibersihkan.");
+      }
+    }
+  </script>
+</body>
+</html>
